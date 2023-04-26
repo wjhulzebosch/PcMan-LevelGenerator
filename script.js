@@ -9,6 +9,8 @@ const enemyButtons = document.getElementById('enemy-buttons');
 const enemyTypes = ['Horse', 'Ghost', 'Teleporter', 'Bouncer', 'Chaser'];
 const collectableButtons = document.getElementById('collectable-buttons');
 const collectables = ['Key', 'Life', 'Coin', 'Finish'];
+const gridHeight = 50;
+const gridWidth = 120;
 
 const State = {
     SELECT_ACTION: 'select_action',
@@ -55,9 +57,9 @@ const enemySymbols = {
 };
 
 function createBorderWalls() {
-    for (let i = 0; i < 25; i++) {
-        for (let j = 0; j < 70; j++) {
-            if (i === 0 || i === 24 || j === 0 || j === 69) {
+    for (let i = 0; i < gridHeight; i++) {
+        for (let j = 0; j < gridWidth; j++) {
+            if (i === 0 || i === gridHeight - 1 || j === 0 || j === gridWidth - 1) {
                 const cell = document.querySelector(`.cell[data-top="${i}"][data-left="${j}"]`);
                 cell.classList.add('wall');
             }
@@ -66,8 +68,8 @@ function createBorderWalls() {
 }
 
 function createGrid() {
-    for (let i = 0; i < 25; i++) {
-        for (let j = 0; j < 70; j++) {
+    for (let i = 0; i < gridHeight; i++) {
+        for (let j = 0; j < gridWidth; j++) {
             const cell = document.createElement('div');
             cell.classList.add('cell');
             cell.dataset.top = i;

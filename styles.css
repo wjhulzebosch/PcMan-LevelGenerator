@@ -10,8 +10,8 @@ body {
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(70, 10px);
-    grid-template-rows: repeat(25, 10px);
+    grid-template-columns: repeat(120, 10px);
+    grid-template-rows: repeat(50, 10px);
     grid-gap: 2px;
     margin-bottom: 20px;
     font-size: 9px;
