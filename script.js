@@ -6,9 +6,11 @@ const generateXmlBtn = document.getElementById('generate-xml');
 const xmlOutput = document.getElementById('xml-output');
 const toggleDrawBtn = document.getElementById('toggle-draw');
 const enemyButtons = document.getElementById('enemy-buttons');
-const enemyTypes = ['Horse', 'Ghost', 'Teleporter', 'Bouncer', 'Chaser'];
+const enemyTypes = ['Horse', 'Ghost', 'Teleporter', 'Bouncer', 'LaserTurret', 'Scanner', 'Speedster', 'ZigZag'];
 const collectableButtons = document.getElementById('collectable-buttons');
 const collectables = ['Key', 'Life', 'Coin', 'Finish'];
+const toggleDeleteBtn = document.getElementById('toggle-delete');
+
 const gridHeight = 50;
 const gridWidth = 120;
 
@@ -29,7 +31,7 @@ const Tooltip = {
     PLACE_COLLECTABLE: 'Click the grid to place collectables',
     JOIN_KEY_WALL: 'Click a wall to join it to the key',
     SELECT_COLLECTABLE_WIN_CONDITION: 'Click a collectable to set it as the win condition',
-    REMOVE: 'Click the grid to remove walls, enemies, and collectables'    
+    REMOVE: 'Click the grid to remove walls, enemies, and collectables'
 };
 
 let lastPlacedKeyCell;
@@ -52,8 +54,11 @@ const enemySymbols = {
     Horse: '🐎',
     Ghost: '👻',
     Teleporter: '📡',
-    Bouncer: '🏓',
-    Chaser: '🏃‍'
+    Bouncer: '⚫',
+    LaserTurret: '🔫',
+    Scanner: '🔍',
+    Speedster: '💨',
+    ZigZag: '↯'
 };
 
 function createBorderWalls() {
@@ -64,6 +69,20 @@ function createBorderWalls() {
                 cell.classList.add('wall');
             }
         }
+    }
+}
+
+function toggleDelete() {
+    if (currentState === State.DELETE) {
+        currentState = State.SELECT_ACTION;
+        toggleDeleteBtn.textContent = 'Enable Delete';
+    } else {
+        currentState = State.DELETE;
+        toggleDeleteBtn.textContent = 'Disable Delete';
+        canDraw = false;
+        toggleDrawBtn.textContent = 'Enable Drawing';
+        selectedEnemy = null;
+        selectedCollectable = null;
     }
 }
 
@@ -150,7 +169,30 @@ function handleCellClick(e) {
             cell.style.backgroundColor = 'red';
             lastPlacedKeyCell.dataset.connectedWall = `${cell.dataset.top}-${cell.dataset.left}`;
             currentState = State.SELECT_ACTION;
+        } else if (currentState === State.DELETE) {
+            cell.classList.remove('wall');
+            delete cell.dataset.enemy;
+            delete cell.dataset.collectable;
+            delete cell.dataset.connectedWall;
+            cell.textContent = '';
+            cell.style.backgroundColor = '';
+
+            // Check if the cell contains a key collectable
+            if (cell.dataset.collectable === 'Key') {
+                // Get the connected wall's position
+                const connectedWallTop = parseInt(cell.dataset.wallTop);
+                const connectedWallLeft = parseInt(cell.dataset.wallLeft);
+
+                // Locate the connected wall cell
+                const connectedWallCell = grid.querySelector(`[data-top="${connectedWallTop}"][data-left="${connectedWallLeft}"]`);
+
+                // Reset the wall's color to black
+                if (connectedWallCell) {
+                    connectedWallCell.style.backgroundColor = 'black';
+                }
+            }
         }
+
     }
 }
 
@@ -187,7 +229,8 @@ function generateXml() {
 
         if (cell.dataset.collectable) {
             if (cell.dataset.collectable === 'Key' && cell.dataset.connectedWall) {
-                collectablesXml += `    <collectable type="${cell.dataset.collectable}" top="${top}" left="${left}" connectedWall="${cell.dataset.connectedWall}" />\n`;
+                const [wallTop, wallLeft] = cell.dataset.connectedWall.split('-');
+                collectablesXml += `    <collectable type="${cell.dataset.collectable}" top="${top}" left="${left}" wallTop="${wallTop}" wallLeft="${wallLeft}" />\n`;
             } else {
                 collectablesXml += `    <collectable type="${cell.dataset.collectable}" top="${top}" left="${left}" />\n`;
             }
@@ -205,6 +248,78 @@ function generateXml() {
     xmlOutput.value = xml;
 }
 
+function clearGrid() {
+    const cells = document.querySelectorAll('.cell');
+    cells.forEach((cell) => {
+        cell.classList.remove('wall');
+        cell.textContent = '';
+        delete cell.dataset.enemy;
+        delete cell.dataset.collectable;
+        delete cell.dataset.connectedWall;
+        cell.style.backgroundColor = ''; // Remove the red background color of the key's connected wall
+    });
+}
+
+function loadXml() {
+    const xmlString = xmlOutput.value;
+
+    clearGrid();
+
+    if (xmlString) {
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlString, 'application/xml');
+
+        const levelNumber = xmlDoc.querySelector('level').getAttribute('number');
+        const levelName = xmlDoc.querySelector('level').getAttribute('name');
+        const levelDescription = xmlDoc.querySelector('level').getAttribute('description');
+
+        levelNumberInput.value = levelNumber;
+        levelNameInput.value = levelName;
+        levelDescriptionInput.value = levelDescription;
+
+        const cells = document.querySelectorAll('.cell');
+        cells.forEach((cell) => {
+            cell.classList.remove('wall');
+            cell.textContent = '';
+            delete cell.dataset.enemy;
+            delete cell.dataset.collectable;
+            delete cell.dataset.connectedWall;
+        });
+
+        xmlDoc.querySelectorAll('wall').forEach((wall) => {
+            const top = wall.getAttribute('top');
+            const left = wall.getAttribute('left');
+            const cell = document.querySelector(`.cell[data-top="${top}"][data-left="${left}"]`);
+            cell.classList.add('wall');
+        });
+
+        xmlDoc.querySelectorAll('enemy').forEach((enemy) => {
+            const top = enemy.getAttribute('top');
+            const left = enemy.getAttribute('left');
+            const type = enemy.getAttribute('type');
+            const cell = document.querySelector(`.cell[data-top="${top}"][data-left="${left}"]`);
+            cell.dataset.enemy = type;
+            cell.textContent = enemySymbols[type];
+        });
+
+        xmlDoc.querySelectorAll('collectable').forEach((collectable) => {
+            const top = collectable.getAttribute('top');
+            const left = collectable.getAttribute('left');
+            const type = collectable.getAttribute('type');
+            const wallTop = collectable.getAttribute('wallTop');
+            const wallLeft = collectable.getAttribute('wallLeft');
+            const cell = document.querySelector(`.cell[data-top="${top}"][data-left="${left}"]`);
+            cell.dataset.collectable = type;
+            cell.textContent = collectableSymbols[type];
+            if (wallTop && wallLeft) {
+                cell.dataset.connectedWall = `${wallTop}-${wallLeft}`;
+                const connectedWallCell = document.querySelector(`.cell[data-top="${wallTop}"][data-left="${wallLeft}"]`);
+                connectedWallCell.style.backgroundColor = 'red';
+            }
+        });
+    }
+}
+
 
 grid.addEventListener('mousedown', (e) => {
     isMouseDown = true;
@@ -215,9 +330,19 @@ grid.addEventListener('mouseup', () => {
     isMouseDown = false;
 });
 
+const clearEverythingBtn = document.getElementById('clear-everything');
+const drawBorderBtn = document.getElementById('draw-border');
+toggleDeleteBtn.addEventListener('click', toggleDelete);
+
+clearEverythingBtn.addEventListener('click', clearGrid);
+drawBorderBtn.addEventListener('click', createBorderWalls);
+
 grid.addEventListener('mouseover', handleCellMouseOver);
 toggleDrawBtn.addEventListener('click', toggleDraw);
 generateXmlBtn.addEventListener('click', generateXml);
+document.getElementById('load-xml').addEventListener('click', loadXml);
+
+
 
 createGrid();
 createBorderWalls();
