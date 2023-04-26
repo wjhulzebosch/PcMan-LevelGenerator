@@ -170,12 +170,6 @@ function handleCellClick(e) {
             lastPlacedKeyCell.dataset.connectedWall = `${cell.dataset.top}-${cell.dataset.left}`;
             currentState = State.SELECT_ACTION;
         } else if (currentState === State.DELETE) {
-            cell.classList.remove('wall');
-            delete cell.dataset.enemy;
-            delete cell.dataset.collectable;
-            delete cell.dataset.connectedWall;
-            cell.textContent = '';
-            cell.style.backgroundColor = '';
 
             // Check if the cell contains a key collectable
             if (cell.dataset.collectable === 'Key') {
@@ -191,6 +185,15 @@ function handleCellClick(e) {
                     connectedWallCell.style.backgroundColor = 'black';
                 }
             }
+
+            cell.classList.remove('wall');
+            delete cell.dataset.enemy;
+            delete cell.dataset.collectable;
+            delete cell.dataset.connectedWall;
+            cell.textContent = '';
+            cell.style.backgroundColor = '';
+
+
         }
 
     }
@@ -345,6 +348,5 @@ document.getElementById('load-xml').addEventListener('click', loadXml);
 
 
 createGrid();
-createBorderWalls();
 addEnemyButtons();
 addCollectableButtons();
