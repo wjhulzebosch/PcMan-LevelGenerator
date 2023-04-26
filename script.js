@@ -10,6 +10,8 @@ const enemyTypes = ['Horse', 'Ghost', 'Teleporter', 'Bouncer', 'LaserTurret', 'S
 const collectableButtons = document.getElementById('collectable-buttons');
 const collectables = ['Key', 'Life', 'Coin', 'Finish'];
 const toggleDeleteBtn = document.getElementById('toggle-delete');
+const tooltip = document.getElementById('tooltip');
+const tooltipOffset = { x: 15, y: 15 };
 
 const gridHeight = 50;
 const gridWidth = 120;
@@ -345,7 +347,39 @@ toggleDrawBtn.addEventListener('click', toggleDraw);
 generateXmlBtn.addEventListener('click', generateXml);
 document.getElementById('load-xml').addEventListener('click', loadXml);
 
+document.addEventListener('mousemove', (e) => {
+    // Update the tooltip position
+    tooltip.style.left = `${e.pageX + tooltipOffset.x}px`;
+    tooltip.style.top = `${e.pageY + tooltipOffset.y}px`;
 
+    // Update the tooltip content based on the current state
+    let content = Tooltip[currentState];
+
+    if (currentState === State.PLACE_ENEMY && selectedEnemy) {
+        content = `Place ${selectedEnemy}`;
+    } else if (currentState === State.PLACE_COLLECTABLE && selectedCollectable) {
+        content = `Place ${selectedCollectable}`;
+    } else if (currentState === State.JOIN_KEY_WALL) {
+        content = `Click on a wall to join it with the key`;
+    } else if (currentState === State.PLACE_WALL) {
+        content = `Click on a cell to place a wall`;
+    } else if (currentState === State.DELETE) {
+        content = `Click on a cell to remove it's contents'`;
+    }
+
+    tooltip.textContent = content;
+
+    // Show the tooltip if it has content
+    if (content) {
+        tooltip.classList.remove('hidden');
+    } else {
+        tooltip.classList.add('hidden');
+    }
+});
+
+document.addEventListener('mouseout', () => {
+    tooltip.classList.add('hidden');
+});
 
 createGrid();
 addEnemyButtons();
