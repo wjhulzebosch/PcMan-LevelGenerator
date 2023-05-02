@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Level Editor</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Game Level Editor</h1>
+
+        <label for="level-number">Level Number:</label>
+        <input type="number" id="level-number" value="" min="1" required>
+        <label for="level-name">Level Name:</label>
+        <input type="text" id="level-name" value="" required>
+        <label for="level-description">Level Description:</label>
+        <input type="text" id="level-description" value="" required>
+
+        <h2>Victory Conditions</h2>
+        <label for="victory-mode">Mode:</label>
+        <select id="victory-mode">
+            <option value="points">Points picked up</option>
+            <option value="items">Items picked up</option>
+        </select>
+        <div id="points-mode" class="victory-condition">
+            <label for="required-points">Required Points:</label>
+            <input type="number" id="required-points" value="0" min="0" required>
+        </div>
+        <div id="items-mode" class="victory-condition hidden">
+            <label for="collectable-list">Collectables:</label>
+            <select id="collectable-list"></select>
+            <button id="add-collectable">Add</button>
+            <button id="remove-collectable">Remove</button>
+            <ul id="required-items"></ul>
+        </div>
+
+        <div id="grid" class="grid"></div>
+        <div id="enemy-buttons"></div>
+        <div id="collectable-buttons"></div>
+        <button id="toggle-draw">Draw walls</button>
+        <button id="toggle-delete">Delete</button>
+        <button id="clear-everything">Clear grid</button>
+        <button id="draw-border">Draw borders</button>
+        <button id="generate-xml">Generate XML</button>
+        <button id="load-xml">Load XML</button>
+        <textarea id="xml-output">{xml}</textarea>
+    </div>
+    <div id="tooltip" class="tooltip hidden"></div>
+    <script src="script.js"></script>
+</body>
+</html>
