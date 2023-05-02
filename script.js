@@ -187,10 +187,7 @@ function handleCellClick(e) {
             delete cell.dataset.connectedWall;
             cell.textContent = '';
             cell.style.backgroundColor = '';
-
-
         }
-
     }
 }
 
@@ -216,7 +213,7 @@ function generateXml() {
     const levelName = levelNameInput.value;
     const levelDescription = levelDescriptionInput.value;
 
-    let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<levels>\n`;
+    let xml = ``;
     xml += `<level number="${levelNumber}" name="${levelName}" description="${levelDescription}">\n`;
 
     let wallsXml = `  <walls>\n`;
@@ -253,7 +250,7 @@ function generateXml() {
     xml += wallsXml;
     xml += enemiesXml;
     xml += collectablesXml;
-    xml += `</level>\n</levels>\n`;
+    xml += `</level>\n`;
     xmlOutput.value = xml;
 }
 
@@ -386,3 +383,4 @@ document.addEventListener('mouseout', () => {
 createGrid();
 addEnemyButtons();
 addCollectableButtons();
+LoadXml();
