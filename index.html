@@ -17,6 +17,25 @@
         <label for="level-description">Level Description:</label>
         <input type="text" id="level-description" value="Easy first level to get familiar with the game." required>
 
+        <h2>Victory Conditions</h2>
+        <label for="victory-mode">Mode:</label>
+        <select id="victory-mode">
+            <option value="points">Points picked up</option>
+            <option value="items">Items picked up</option>
+        </select>
+        <div id="points-mode" class="victory-condition">
+            <label for="required-points">Required Points:</label>
+            <input type="number" id="required-points" value="0" min="0" required>
+        </div>
+        <div id="items-mode" class="victory-condition hidden">
+            <label for="collectable-list">Collectables:</label>
+            <select id="collectable-list"></select>
+            <button id="add-collectable">Add</button>
+            <button id="remove-collectable">Remove</button>
+            <ul id="required-items"></ul>
+        </div>
+
+
         <div id="grid" class="grid"></div>
         <div id="enemy-buttons"></div>
         <div id="collectable-buttons"></div>

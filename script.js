@@ -58,6 +58,14 @@ const levelDescriptionInput = document.getElementById('level-description');
 const generateXmlBtn = document.getElementById('generate-xml');
 const xmlOutput = document.getElementById('xml-output');
 const toggleDrawBtn = document.getElementById('toggle-draw');
+const victoryModeSelect = document.getElementById('victory-mode');
+const pointsMode = document.getElementById('points-mode');
+const itemsMode = document.getElementById('items-mode');
+const requiredPointsInput = document.getElementById('required-points');
+const collectableList = document.getElementById('collectable-list');
+const addCollectableBtn = document.getElementById('add-collectable');
+const removeCollectableBtn = document.getElementById('remove-collectable');
+const requiredItems = document.getElementById('required-items');
 const enemyButtons = document.getElementById('enemy-buttons');
 const enemyTypes = ['Horse', 'Ghost', 'Teleporter', 'Bouncer', 'LaserTurret', 'Scanner', 'Speedster', 'ZigZag'];
 const collectableButtons = document.getElementById('collectable-buttons');
@@ -207,7 +215,6 @@ function createBorderWalls() {
         }
     }
 }
-
 function generateXml() {
     const levelNumber = levelNumberInput.value;
     const levelName = levelNameInput.value;
@@ -219,6 +226,22 @@ function generateXml() {
     let wallsXml = `  <walls>\n`;
     let enemiesXml = `  <enemies>\n`;
     let collectablesXml = `  <collectables>\n`;
+
+    // Add victory conditions
+    xml += `  <victoryConditions>\n`;
+    xml += `    <mode>${victoryModeSelect.value}</mode>\n`;
+
+    if (victoryModeSelect.value === 'points') {
+        xml += `    <requiredPoints>${requiredPointsInput.value}</requiredPoints>\n`;
+    } else {
+        xml += `    <items>\n`;
+        Array.from(requiredItems.children).forEach(item => {
+            xml += `      <collectable type="${item.dataset.collectable}" count="${item.dataset.count}" />\n`;
+        });
+        xml += `    </items>\n`;
+    }
+
+    xml += `  </victoryConditions>\n`;
 
     const cells = document.querySelectorAll('.cell');
     cells.forEach((cell) => {
@@ -283,6 +306,36 @@ function loadXml() {
         levelNameInput.value = levelName;
         levelDescriptionInput.value = levelDescription;
 
+        // Load victory conditions
+        const victoryConditions = level.getElementsByTagName('victoryConditions')[0];
+        const mode = victoryConditions.getElementsByTagName('mode')[0].textContent;
+        victoryModeSelect.value = mode;
+        updateVictoryMode();
+
+        if (mode === 'points') {
+            const requiredPoints = victoryConditions.getElementsByTagName('requiredPoints')[0].textContent;
+            requiredPointsInput.value = requiredPoints;
+        } else {
+            const items = victoryConditions.getElementsByTagName('items')[0];
+            const collectables = items.getElementsByTagName('collectable');
+
+            // Clear existing items
+            while (requiredItems.firstChild) {
+                requiredItems.removeChild(requiredItems.firstChild);
+            }
+
+            for (let i = 0; i < collectables.length; i++) {
+                const collectable = collectables[i].getAttribute('type');
+                const count = collectables[i].getAttribute('count');
+
+                const listItem = document.createElement('li');
+                listItem.textContent = `${collectable} (${count})`;
+                listItem.dataset.collectable = collectable;
+                listItem.dataset.count = count;
+                requiredItems.appendChild(listItem);
+            }
+        }
+        
         const cells = document.querySelectorAll('.cell');
         cells.forEach((cell) => {
             cell.classList.remove('wall');
@@ -326,6 +379,17 @@ function loadXml() {
     }
 }
 
+function updateVictoryMode() {
+    if (victoryModeSelect.value === 'points') {
+        pointsMode.classList.remove('hidden');
+        itemsMode.classList.add('hidden');
+    } else {
+        pointsMode.classList.add('hidden');
+        itemsMode.classList.remove('hidden');
+    }
+}
+
+
 // Event listeners
 grid.addEventListener('mousedown', (e) => {
     isMouseDown = true;
@@ -345,6 +409,23 @@ grid.addEventListener('mouseover', handleCellMouseOver);
 toggleDrawBtn.addEventListener('click', toggleDraw);
 generateXmlBtn.addEventListener('click', generateXml);
 document.getElementById('load-xml').addEventListener('click', loadXml);
+victoryModeSelect.addEventListener('change', updateVictoryMode);
+
+addCollectableBtn.addEventListener('click', () => {
+    const collectable = collectableList.value;
+    const listItem = document.createElement('li');
+    listItem.textContent = `${collectable} (1)`;
+    listItem.dataset.collectable = collectable;
+    listItem.dataset.count = 1;
+    requiredItems.appendChild(listItem);
+});
+
+removeCollectableBtn.addEventListener('click', () => {
+    if (requiredItems.lastChild) {
+        requiredItems.removeChild(requiredItems.lastChild);
+    }
+});
+
 
 document.addEventListener('mousemove', (e) => {
     // Update the tooltip position
@@ -380,7 +461,19 @@ document.addEventListener('mouseout', () => {
     tooltip.classList.add('hidden');
 });
 
+// Populate the collectable list
+collectables.forEach(collectable => {
+    const option = document.createElement('option');
+    option.textContent = collectable;
+    option.value = collectable;
+    collectableList.appendChild(option);
+});
+
+
+// Initialize victory conditions
+updateVictoryMode();
+
 createGrid();
 addEnemyButtons();
 addCollectableButtons();
-LoadXml();
+loadXml();
