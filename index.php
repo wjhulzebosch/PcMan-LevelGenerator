@@ -1,5 +1,5 @@
 <?php
-require_once 'levelData.php';
+require_once 'Data/levelData.php';
 
 // Initialize levelData object
 $levelData = new LevelData();
