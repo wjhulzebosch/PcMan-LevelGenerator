@@ -172,34 +172,39 @@ function handleCellClick(e) {
             }
             cell.dataset.collectable = selectedCollectable;
             cell.textContent = collectableSymbols[selectedCollectable];
-        } else if (currentState === State.JOIN_KEY_WALL && cell.classList.contains('wall')) {
+        } // Missing closing brace was added here
+
+        if (currentState === State.JOIN_KEY_WALL && cell.classList.contains('wall')) {
             cell.style.backgroundColor = 'red';
-            lastPlacedKeyCell.dataset.connectedWall = `${cell.dataset.top}-${cell.dataset.left}`;
+            lastPlacedKeyCell.dataset.wallTop = `${cell.dataset.top}`;
+            lastPlacedKeyCell.dataset.wallLeft = `${cell.dataset.left}`;
             currentState = State.SELECT_ACTION;
         } else if (currentState === State.REMOVE) {
-
             // Check if the cell contains a key collectable
             if (cell.dataset.collectable === 'Key') {
                 // Get the connected wall's position
-                const connectedWallTop = parseInt(cell.dataset.wallTop);
-                const connectedWallLeft = parseInt(cell.dataset.wallLeft);
+                const wallTop = cell.dataset.wallTop;
+                const wallLeft = cell.dataset.wallLeft;
 
                 // Locate the connected wall cell
-                const connectedWallCell = grid.querySelector(`[data-top="${connectedWallTop}"][data-left="${connectedWallLeft}"]`);
+                const connectedWallCell = grid.querySelector(`[data-top="${wallTop}"][data-left="${wallLeft}"]`);
 
-                // Reset the wall's color to black
                 if (connectedWallCell) {
                     connectedWallCell.style.backgroundColor = 'black';
+                } else {
+                    console.log('Connected wall not found');
                 }
             }
 
             cell.classList.remove('wall');
             delete cell.dataset.enemy;
             delete cell.dataset.collectable;
-            delete cell.dataset.connectedWall;
+            delete cell.dataset.wallTop;
+            delete cell.dataset.wallLeft;
             cell.textContent = '';
             cell.style.backgroundColor = '';
         }
+
     }
 }
 
@@ -261,8 +266,9 @@ function generateXml() {
         }
 
         if (cell.dataset.collectable) {
-            if (cell.dataset.collectable === 'Key' && cell.dataset.connectedWall) {
-                const [wallTop, wallLeft] = cell.dataset.connectedWall.split('-');
+            if (cell.dataset.collectable === 'Key' && cell.dataset.wallTop && cell.dataset.wallLeft) {
+                const wallTop = cell.dataset.wallTop;
+                const wallLeft = cell.dataset.wallLeft;
                 collectablesXml += `    <collectable type="${cell.dataset.collectable}" top="${top}" left="${left}" wallTop="${wallTop}" wallLeft="${wallLeft}" />\n`;
             } else {
                 collectablesXml += `    <collectable type="${cell.dataset.collectable}" top="${top}" left="${left}" />\n`;
@@ -274,9 +280,9 @@ function generateXml() {
     enemiesXml += `  </enemies>\n`;
     collectablesXml += `  </collectables>\n`;
 
-    xml += wallsXml;
     xml += enemiesXml;
     xml += collectablesXml;
+    xml += wallsXml;
     xml += `</level>\n`;
     xmlOutput.value = xml;
 }
@@ -339,7 +345,7 @@ function loadXml() {
                 requiredItems.appendChild(listItem);
             }
         }
-        
+
         const cells = document.querySelectorAll('.cell');
         cells.forEach((cell) => {
             cell.classList.remove('wall');
@@ -375,7 +381,8 @@ function loadXml() {
             cell.dataset.collectable = type;
             cell.textContent = collectableSymbols[type];
             if (wallTop && wallLeft) {
-                cell.dataset.connectedWall = `${wallTop}-${wallLeft}`;
+                cell.dataset.wallTop = wallTop;
+                cell.dataset.wallLeft = wallLeft;
                 const connectedWallCell = document.querySelector(`.cell[data-top="${wallTop}"][data-left="${wallLeft}"]`);
                 connectedWallCell.style.backgroundColor = 'red';
             }

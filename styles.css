@@ -58,4 +58,8 @@ button.selected {
     pointer-events: none;
 }
 
-
+.disabled-link {
+    color: #ccc;
+    pointer-events: none;
+    cursor: default;
+}
