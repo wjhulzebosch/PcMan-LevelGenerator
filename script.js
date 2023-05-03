@@ -88,10 +88,10 @@ function createGrid() {
             grid.appendChild(cell);
         }
     }
-}
-function addEnemyButtons() {
+} function addEnemyButtons() {
     enemyTypes.forEach((enemyType) => {
         const enemyButton = document.createElement('button');
+        enemyButton.setAttribute('type', 'button');
         enemyButton.textContent = `Add ${enemyType}`;
         enemyButton.addEventListener('click', () => {
             // Reset canDraw and selectedCollectable
@@ -112,6 +112,7 @@ function addEnemyButtons() {
 function addCollectableButtons() {
     collectables.forEach((collectableType) => {
         const collectableButton = document.createElement('button');
+        collectableButton.setAttribute('type', 'button');
         collectableButton.textContent = `Add ${collectableType}`;
         collectableButton.addEventListener('click', () => {
             // Reset canDraw and selectedEnemy
@@ -451,7 +452,7 @@ removeCollectableBtn.addEventListener('click', () => {
     }
 });
 
-saveBtn.addEventListener('click', saveLevel);
+// saveBtn.addEventListener('click', saveLevel);
 
 document.addEventListener('mousemove', (e) => {
     // Update the tooltip position

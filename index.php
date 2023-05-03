@@ -1,175 +1,105 @@
 <?php
-// call conn.php to connect to the database
-require('conn.php');
+require_once 'levelData.php';
 
-global $conn;
 
-// A level has the following properties:
-// levelId: The ID of the level
-// levelOrder: The order of the level in the list of levels
-// xml: The xml of the level
-// levelName: The name of the level
-// levelDescription: The description of the level
-// levelAuthor: The author of the level
 
-// If new levelInformation has been posted, and a levelId has been provided, call updateLevel (levelId -1 means new level)
-if (isset($_POST['levelInformation']) && isset($_POST['levelId'])) 
-{
-	$levelInformation = $_POST['levelInformation'];
-	$levelId = $_POST['levelId'];
-	updateLevel($levelInformation, $levelId);	
+// Initialize levelData object
+$levelData = new LevelData();
+
+// Check if there's a request to create, update, delete, or swap level order
+if (isset($_POST['action'])) {
+    if ($_POST['action'] == 'create' || $_POST['action'] == 'update') {
+        $xmlBody = $_POST['xml-output'];
+        $levelData->saveLevel($levelId, $xmlBody);
+    } elseif ($_POST['action'] == 'delete') {
+        $levelId = intval($_POST['levelId']);
+        $levelData->deleteLevel($levelId);
+    }
+    header('Location: index.php');
+} elseif (isset($_GET['up']) || isset($_GET['down'])) {
+    $levelId = intval($_GET['up'] ?? $_GET['down']);
+    $direction = isset($_GET['up']) ? 'up' : 'down';
+    $levelData->swapLevelOrder($levelId, $direction);
+    header('Location: index.php');
 }
 
-// If we are looking at a specific level, show that level
-if(isset($_GET['levelId']))
-{
-	showLevel($_GET['levelId']);
+// Check if there's a request to edit a specific level or create a new level
+if (isset($_GET['edit']) || isset($_GET['new'])) {
+    if (isset($_GET['edit'])) {
+        $levelId = intval($_GET['edit']);
+        $level = $levelData->getLevel($levelId);
+        $action = 'update';
+    } else {
+        $levelId = -1;
+        $action = 'create';
+    }
 }
 
-// If we are not looking at a specific level, show the list of levels
-else
-{
-	listLevels();
-}
+$levels = $levelData->getAllLevels();
+?>
 
-// If the user wants to delete the level, and a levelId has been provided, call deleteLevel
-if(isset($_GET['delete']) && isset($_GET['levelId']))
-{
-	deleteLevel($_GET['levelId']);
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>PcMan LevelGenerator</h1>
+    <?php if (!isset($action)): ?>
+        <table>
+            <thead>
+                <tr>
+                    <th>Level ID</th>
+                    <th>Level Order</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($levels as $level) : ?>
+                    <tr>
+                        <td><?php echo $level['levelId']; ?></td>
+                        <td><?php echo $level['levelOrder']; ?></td>
+                        <td>
+                            <a href="?edit=<?php echo $level['levelId']; ?>">Edit</a> |
+                            <form action="" method="post" style="display:inline;">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="levelId" value="<?php echo $level['levelId']; ?>">
+                                <button type="submit">Delete</button>
+                            </form> |
+                            <a href="?up=<?php echo $level['levelId']; ?>">Up</a> |
+                            <a href="?down=<?php echo $level['levelId']; ?>">Down</a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+        <a href="?edit=-1">New Level</a>
+    <?php endif; ?>
 
-// If the user wants to reorder the level, and a levelId and direction has been provided, call reorderLevel
-if(isset($_GET['reorder']) && isset($_GET['levelId']) && isset($_GET['direction']))
-{
-	reorderLevel($_GET['levelId'], $_GET['direction']);
-}
-
-// Add new level or update an existing level
-function updateLevel($levelInformation, $levelId) {
-	global $conn;
-
-	if ($levelId == -1) {
-		$sql = "INSERT INTO levels (levelOrder, xml, levelName, levelDescription, levelAuthor) VALUES (?, ?, ?, ?, ?)";
-		$stmt = $conn->prepare($sql);
-		$stmt->bind_param("issss", $levelInformation['levelOrder'], $levelInformation['xml'], $levelInformation['levelName'], $levelInformation['levelDescription'], $levelInformation['levelAuthor']);
-	} else {
-		$sql = "UPDATE levels SET levelOrder = ?, xml = ?, levelName = ?, levelDescription = ?, levelAuthor = ? WHERE levelId = ?";
-		$stmt = $conn->prepare($sql);
-		$stmt->bind_param("issssi", $levelInformation['levelOrder'], $levelInformation['xml'], $levelInformation['levelName'], $levelInformation['levelDescription'], $levelInformation['levelAuthor'], $levelId);
-	}
-
-	$stmt->execute();
-	$stmt->close();
-}
-
-// Show a specific level by levelId
-function showLevel($levelId) {
-	global $conn;
-	
-	// if levelId is -1, show a new level
-	if($levelId == -1)
-	{
-		$level = array(
-			'levelId' => -1,
-			'levelOrder' => 0,
-			'xml' => '',
-			'levelName' => '',
-			'levelDescription' => '',
-			'levelAuthor' => ''
-		);
-	}
-	else {
-		$sql = "SELECT * FROM levels WHERE levelId = ?";
-		$stmt = $conn->prepare($sql);
-		$stmt->bind_param("i", $levelId);
-
-		$stmt->execute();
-		$result = $stmt->get_result();
-
-		if ($result->num_rows > 0) {
-			$level = $result->fetch_assoc();
+    <?php if (isset($action)) 
+    {
+	    // read the contents of Templates/levelTemplate.html
+        $levelTemplate = file_get_contents('Templates/levelTemplate.html');
+		
+		// if the current level exists, and the xmlBody isset
+		if (isset($level) && isset($level['xmlBody'])) 
+		{
+			// replace the placeholder in the levelTemplate with the xmlBody
+			$levelTemplate = str_replace('{{xmlBody}}', $level['xmlBody'], $levelTemplate);
+		} 
+		else 
+		{
+			// otherwise, replace the placeholder with an empty string
+			$levelTemplate = str_replace('{{xmlBody}}', '', $levelTemplate);
 		}
-			
-		$stmt->close();
-	}
-	// Display the level details as per your requirements
-	showLevelHtml($level);
+		
+		// display the levelTemplate
+		echo $levelTemplate;
+    }
+	?>
 
-}
-
-// List all levels
-function listLevels() {
-	global $conn;
-
-	$sql = "SELECT * FROM levels ORDER BY levelOrder ASC";
-	$result = $conn->query($sql);
-
-	if ($result->num_rows > 0) {
-		while($level = $result->fetch_assoc()) {
-			// Display the level details as per your requirements
-		}
-	} else {
-		// No levels found
-	}
-}
-
-// Delete a level by levelId
-function deleteLevel($levelId) {
-	global $conn;
-
-	$sql = "DELETE FROM levels WHERE levelId = ?";
-	$stmt = $conn->prepare($sql);
-	$stmt->bind_param("i", $levelId);
-
-	$stmt->execute();
-	$stmt->close();
-}
-
-// Reorder a level
-function reorderLevel($levelId, $direction) {
-	global $conn;
-
-	// Get the level information
-	$sql = "SELECT * FROM levels WHERE levelId = ?";
-	$stmt = $conn->prepare($sql);
-	$stmt->bind_param("i", $levelId);
-
-	$stmt->execute();
-	$result = $stmt->get_result();
-
-	if ($result->num_rows > 0) {
-		$level = $result->fetch_assoc();
-		$levelOrder = $level['levelOrder'];
-		$newOrder = $levelOrder + ($direction == "up" ? -1 : 1);
-
-		// Swap the order of the current level and the adjacent level
-		$sql = "UPDATE levels SET levelOrder = ? WHERE levelOrder = ?";
-		$stmt = $conn->prepare($sql);
-		$stmt->bind_param("ii", $levelOrder, $newOrder);
-		$stmt->execute();
-
-		$sql = "UPDATE levels SET levelOrder = ? WHERE levelId = ?";
-		$stmt = $conn->prepare($sql);
-		$stmt->bind_param("ii", $newOrder, $levelId);
-		$stmt->execute();
-		$stmt->close();
-	} else {
-		// No level found with the given levelId
-	}		
-}
-function showLevelHtml($level) 
-{
-	die("hier?");
-	// read the template html
-	$html = file_get_contents('template.html');
-	
-	// replace the placeholders with the level information
-	$html = str_replace('{{levelId}}', $level['levelId'], $html);
-	$html = str_replace('{{xml}}', $level['xml'], $html);
-	$html = str_replace('{{levelName}}', $level['levelName'], $html);
-	$html = str_replace('{{levelDescription}}', $level['levelDescription'], $html);
-	$html = str_replace('{{levelAuthor}}', $level['levelAuthor'], $html);
-	
-	// display the html
-	echo $html;
-}
+</body>
+</html>

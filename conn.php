@@ -7,7 +7,7 @@ function connect() {
 	$servername = "localhost";
 	$username = "root";
 	$password = "";
-	$dbname = "pcmanlevels";
+	$dbname = "csd_iv_levelgenerator_v1_1";
 
 	// Create connection
 	$conn = new mysqli($servername, $username, $password, $dbname);
