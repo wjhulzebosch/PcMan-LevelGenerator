@@ -100,6 +100,18 @@ public function swapLevelOrder($levelId, $direction) {
         $stmt->execute();
     }
 }
+// A method to create a new, empty level, with a max levelOrder, and return it's levelId
+public function createNewLevel() {
+	$query = "SELECT MAX(levelOrder) as maxLevelOrder FROM levels";
+	$result = $this->conn->query($query);
+	$row = $result->fetch_assoc();
+	$newLevelOrder = $row['maxLevelOrder'] + 1;
 
+	$query = "INSERT INTO levels (xmlBody, levelOrder) VALUES ('', ?)";
+	$stmt = $this->conn->prepare($query);
+	$stmt->bind_param('i', $newLevelOrder);
+	$stmt->execute();
 
+	return $stmt->insert_id;
+}
 }

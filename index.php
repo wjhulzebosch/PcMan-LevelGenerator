@@ -1,8 +1,6 @@
 <?php
 require_once 'levelData.php';
 
-
-
 // Initialize levelData object
 $levelData = new LevelData();
 
@@ -10,17 +8,18 @@ $levelData = new LevelData();
 if (isset($_POST['action'])) {
     if ($_POST['action'] == 'create' || $_POST['action'] == 'update') {
         $xmlBody = $_POST['xml-output'];
+		$levelId = $_POST['levelId'];
         $levelData->saveLevel($levelId, $xmlBody);
     } elseif ($_POST['action'] == 'delete') {
         $levelId = intval($_POST['levelId']);
         $levelData->deleteLevel($levelId);
     }
-    header('Location: index.php');
+    // header('Location: index.php');
 } elseif (isset($_GET['up']) || isset($_GET['down'])) {
     $levelId = intval($_GET['up'] ?? $_GET['down']);
     $direction = isset($_GET['up']) ? 'up' : 'down';
     $levelData->swapLevelOrder($levelId, $direction);
-    header('Location: index.php');
+    // header('Location: index.php');
 }
 
 // Check if there's a request to edit a specific level or create a new level
@@ -28,6 +27,7 @@ if (isset($_GET['edit']) || isset($_GET['new'])) {
     if (isset($_GET['edit'])) {
         $levelId = intval($_GET['edit']);
         $level = $levelData->getLevel($levelId);
+		// var_dump($level);die;
         $action = 'update';
     } else {
         $levelId = -1;
@@ -84,16 +84,21 @@ $levels = $levelData->getAllLevels();
 	    // read the contents of Templates/levelTemplate.html
         $levelTemplate = file_get_contents('Templates/levelTemplate.html');
 		
+		// If the current level does not exists, create an empty one.
+		if(!isset($level)) {
+		    $level = array(
+				'levelId' => $levelData->createNewLevel(),
+		        'xmlBody' => '--');
+        }
+
 		// if the current level exists, and the xmlBody isset
-		if (isset($level) && isset($level['xmlBody'])) 
+		if (isset($level) && isset($level['xmlBody']))
 		{
 			// replace the placeholder in the levelTemplate with the xmlBody
-			$levelTemplate = str_replace('{{xmlBody}}', $level['xmlBody'], $levelTemplate);
-		} 
-		else 
-		{
-			// otherwise, replace the placeholder with an empty string
-			$levelTemplate = str_replace('{{xmlBody}}', '', $levelTemplate);
+			$levelTemplate = str_replace('{xml}', $level['xmlBody'], $levelTemplate);
+			
+			// replace the placeholder in the levelTemplate with the levelId
+			$levelTemplate = str_replace('{levelId}', $level['levelId'], $levelTemplate);
 		}
 		
 		// display the levelTemplate
