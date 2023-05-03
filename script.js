@@ -74,6 +74,8 @@ const toggleDeleteBtn = document.getElementById('toggle-delete');
 const tooltip = document.getElementById('tooltip');
 const clearEverythingBtn = document.getElementById('clear-everything');
 const drawBorderBtn = document.getElementById('draw-border');
+const saveBtn = document.getElementById('saveBtn');
+
 
 // Functions
 function createGrid() {
@@ -307,7 +309,7 @@ function loadXml() {
         levelDescriptionInput.value = levelDescription;
 
         // Load victory conditions
-        const victoryConditions = level.getElementsByTagName('victoryConditions')[0];
+        const victoryConditions = xmlDoc.getElementsByTagName('victoryConditions')[0];
         const mode = victoryConditions.getElementsByTagName('mode')[0].textContent;
         victoryModeSelect.value = mode;
         updateVictoryMode();
@@ -389,6 +391,29 @@ function updateVictoryMode() {
     }
 }
 
+function saveLevel() {
+    generateXml();
+
+    const levelInformation = xmlOutput.value;
+
+    fetch('index.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: 'levelInformation=' + encodeURIComponent(levelInformation)
+    }).then(response => {
+        if (response.ok) {
+            return response.text();
+        } else {
+            throw new Error('Failed to save level information');
+        }
+    }).then(data => {
+        console.log('Level information saved successfully', data);
+    }).catch(error => {
+        console.error('Error saving level information', error);
+    });
+}
 
 // Event listeners
 grid.addEventListener('mousedown', (e) => {
@@ -426,6 +451,7 @@ removeCollectableBtn.addEventListener('click', () => {
     }
 });
 
+saveBtn.addEventListener('click', saveLevel);
 
 document.addEventListener('mousemove', (e) => {
     // Update the tooltip position

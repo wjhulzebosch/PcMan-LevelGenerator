@@ -1,17 +1,23 @@
 <?php
-// Database configuration
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "pcmanlevels";
+connect();
+function connect() {
+	global $conn;
+	
+	// Database configuration
+	$servername = "localhost";
+	$username = "root";
+	$password = "";
+	$dbname = "pcmanlevels";
 
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
+	// Create connection
+	$conn = new mysqli($servername, $username, $password, $dbname);
 
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+	// Check connection
+	if ($conn->connect_error) {
+		die("Connection failed: " . $conn->connect_error);
+	}
+
+	// echo "Connected successfully";
 }
 
-echo "Connected successfully";
 ?>
