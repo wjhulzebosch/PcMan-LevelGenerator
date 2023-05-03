@@ -12,11 +12,11 @@
 
         <div class="container">
             <label for="level-number">Level Number:</label>
-            <input type="number" id="level-number" name="levelId" value="{levelId}" >
+            <input type="number" id="level-number" name="levelId" value="{levelId}">
             <label for="level-name">Level Name:</label>
-            <input type="text" id="level-name" value="" >
+            <input type="text" id="level-name" value="">
             <label for="level-description">Level Description:</label>
-            <input type="text" id="level-description" value="" >
+            <input type="text" id="level-description" value="">
 
             <h2>Victory Conditions</h2>
             <label for="victory-mode">Mode:</label>
@@ -26,7 +26,7 @@
             </select>
             <div id="points-mode" class="victory-condition">
                 <label for="required-points">Required Points:</label>
-                <input type="number" id="required-points" value="0" min="0" >
+                <input type="number" id="required-points" value="0" min="0">
             </div>
             <div id="items-mode" class="victory-condition hidden">
                 <label for="collectable-list">Collectables:</label>
@@ -48,6 +48,8 @@
             <input type="hidden" name="action" value="update" />
             <textarea id="xml-output" name="xml-output">{xml}</textarea>
             <button type="submit" id="saveBtn">Save</button>
+            <button type="button" id="cancelBtn">Cancel</button>
+
         </div>
 
         <div id="tooltip" class="tooltip hidden"></div>

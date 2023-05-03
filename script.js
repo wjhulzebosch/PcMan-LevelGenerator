@@ -76,7 +76,6 @@ const clearEverythingBtn = document.getElementById('clear-everything');
 const drawBorderBtn = document.getElementById('draw-border');
 const saveBtn = document.getElementById('saveBtn');
 
-
 // Functions
 function createGrid() {
     for (let i = 0; i < gridHeight; i++) {
@@ -88,7 +87,9 @@ function createGrid() {
             grid.appendChild(cell);
         }
     }
-} function addEnemyButtons() {
+}
+
+function addEnemyButtons() {
     enemyTypes.forEach((enemyType) => {
         const enemyButton = document.createElement('button');
         enemyButton.setAttribute('type', 'button');
@@ -392,30 +393,6 @@ function updateVictoryMode() {
     }
 }
 
-function saveLevel() {
-    generateXml();
-
-    const levelInformation = xmlOutput.value;
-
-    fetch('index.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: 'levelInformation=' + encodeURIComponent(levelInformation)
-    }).then(response => {
-        if (response.ok) {
-            return response.text();
-        } else {
-            throw new Error('Failed to save level information');
-        }
-    }).then(data => {
-        console.log('Level information saved successfully', data);
-    }).catch(error => {
-        console.error('Error saving level information', error);
-    });
-}
-
 // Event listeners
 grid.addEventListener('mousedown', (e) => {
     isMouseDown = true;
@@ -452,7 +429,17 @@ removeCollectableBtn.addEventListener('click', () => {
     }
 });
 
-// saveBtn.addEventListener('click', saveLevel);
+document.getElementById("saveBtn").addEventListener("click", (event) => {
+    event.preventDefault(); // Prevent the form from submitting immediately
+    generateXml(); // Call the generateXml function to update the XML
+    document.querySelector("form").submit(); // Submit the form after the XML is generated
+});
+
+document.getElementById("cancelBtn").addEventListener("click", () => {
+    if (confirm("Are you sure you want to discard changes and go back to the index?")) {
+        window.location.href = "index.php";
+    }
+});
 
 document.addEventListener('mousemove', (e) => {
     // Update the tooltip position
