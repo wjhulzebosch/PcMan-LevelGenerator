@@ -23,11 +23,17 @@ class LevelData {
 public function getAllLevels() {
     $query = "SELECT levelId, xmlBody, levelOrder FROM levels ORDER BY levelOrder";
     $result = $this->conn->query($query);
+	if($result === false) {
+		die("Error: " . $this->conn->error);
+    }
     $levels = [];
 
-    while ($row = $result->fetch_assoc()) {
-        $levels[] = $row;
-    }
+	// check if the query returned any results
+	if ($result->num_rows > 0) {
+		while ($row = $result->fetch_assoc()) {
+			$levels[] = $row;
+		}
+	}
 
     return $levels;
 }
