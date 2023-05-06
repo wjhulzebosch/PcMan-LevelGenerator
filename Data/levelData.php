@@ -6,15 +6,14 @@ class LevelData {
     public function __construct() {
         $this->connect();
     }
+	
 
     private function connect() {
-        // Replace with your own database credentials
-        $host = 'localhost';
-        $user = 'root';
-        $password = '';
-        $database = 'csd_iv_levelgenerator_v1_2';
+        		global $env;
 
-        $this->conn = new mysqli($host, $user, $password, $database);
+		require_once('.env');
+		
+        $this->conn = new mysqli($env['dbHost'], $env['dbUser'], $env['dbPass'], $env['dbName']);
 
         if ($this->conn->connect_error) {
             die("Connection failed: " . $this->conn->connect_error);

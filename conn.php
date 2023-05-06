@@ -3,6 +3,9 @@ connect();
 function connect() {
 	global $conn;
 	
+	require_once('.env');
+	global $env;
+
 	// Database configuration
 	$servername = "localhost";
 	$username = "root";
@@ -10,7 +13,7 @@ function connect() {
 	$dbname = "csd_iv_levelgenerator_v1_1";
 
 	// Create connection
-	$conn = new mysqli($servername, $username, $password, $dbname);
+	$conn = new mysqli($env['dbHost'], $env['dbUser'], $env['dbPass'], $env['dbName']);
 
 	// Check connection
 	if ($conn->connect_error) {
