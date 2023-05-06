@@ -280,9 +280,9 @@ function generateXml() {
     enemiesXml += `  </enemies>\n`;
     collectablesXml += `  </collectables>\n`;
 
+    xml += wallsXml;
     xml += enemiesXml;
     xml += collectablesXml;
-    xml += wallsXml;
     xml += `</level>\n`;
     xmlOutput.value = xml;
 }
