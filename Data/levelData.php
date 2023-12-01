@@ -21,7 +21,16 @@ class LevelData {
     }
 	
 public function getAllLevels() {
-    $query = "SELECT levelId, xmlBody, levelOrder FROM levels ORDER BY levelOrder";
+    $query = "
+        SELECT levelId, xmlBody, levelOrder 
+        
+        FROM levels 
+
+        WHERE levelId <> ''
+        AND xmlBody <> ''
+        
+        ORDER BY levelOrder
+    ";
     $result = $this->conn->query($query);
 	if($result === false) {
 		die("Error: " . $this->conn->error);

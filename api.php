@@ -1,4 +1,10 @@
 <?php
+
+// Show all errors and warnings
+// ini_set('display_errors', 1);
+// ini_set('display_startup_errors', 1);
+// error_reporting(E_ALL);
+
 require('dev.php');
 require_once 'Data/levelData.php';
 
@@ -21,6 +27,7 @@ else {
     $xml = new SimpleXMLElement('<levels/>');
 
     foreach ($levels as $level) {
+
         // Get the level object
         $levelObj =$levelData->getLevel($level['levelId']);
 
